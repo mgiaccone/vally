@@ -23,3 +23,20 @@ func StructKey(s interface{}) string {
 	}
 	return name
 }
+
+func IsNil(i interface{}) bool {
+	if i == nil {
+		return true
+	}
+
+	switch reflect.TypeOf(i).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		return reflect.ValueOf(i).IsNil()
+	}
+
+	return false
+}
+
+func IsPointer(i interface{}) bool {
+	return reflect.ValueOf(i).Type().Kind() == reflect.Ptr
+}

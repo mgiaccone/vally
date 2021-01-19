@@ -10,16 +10,16 @@ var (
 
 // Visitor represents the AST tree traversal visitor.
 type Visitor interface {
-	VisitFunction(*Function)
-	VisitGroup(*Group)
-	VisitLogicAnd(*LogicAnd)
-	VisitLogicOr(*LogicOr)
-	VisitLogicNot(*LogicNot)
+	VisitFunction(*Function) error
+	VisitGroup(*Group) error
+	VisitLogicAnd(*LogicAnd) error
+	VisitLogicOr(*LogicOr) error
+	VisitLogicNot(*LogicNot) error
 }
 
 // Node represents a generic AST node.
 type Node interface {
-	Visit(v Visitor)
+	Visit(v Visitor) error
 }
 
 // FunctionArg represents an argument to a function.
@@ -37,8 +37,8 @@ type Function struct {
 }
 
 // Visit implements the Node interface.
-func (n *Function) Visit(v Visitor) {
-	v.VisitFunction(n)
+func (n *Function) Visit(v Visitor) error {
+	return v.VisitFunction(n)
 }
 
 // Group represents an AST group.
@@ -47,9 +47,11 @@ type Group struct {
 }
 
 // Visit implements the Node interface.
-func (n *Group) Visit(v Visitor) {
-	n.Expression.Visit(v)
-	v.VisitGroup(n)
+func (n *Group) Visit(v Visitor) (err error) {
+	if err = n.Expression.Visit(v); err != nil {
+		return err
+	}
+	return v.VisitGroup(n)
 }
 
 // LogicAnd represents an AST logical AND operator.
@@ -59,10 +61,14 @@ type LogicAnd struct {
 }
 
 // Visit implements the Node interface.
-func (n *LogicAnd) Visit(v Visitor) {
-	n.Left.Visit(v)
-	n.Right.Visit(v)
-	v.VisitLogicAnd(n)
+func (n *LogicAnd) Visit(v Visitor) (err error) {
+	if err = n.Left.Visit(v); err != nil {
+		return err
+	}
+	if err = n.Right.Visit(v); err != nil {
+		return err
+	}
+	return v.VisitLogicAnd(n)
 }
 
 // LogicNot represents an AST logical NOT operator.
@@ -71,9 +77,11 @@ type LogicNot struct {
 }
 
 // Visit implements the Node interface.
-func (n *LogicNot) Visit(v Visitor) {
-	n.Expression.Visit(v)
-	v.VisitLogicNot(n)
+func (n *LogicNot) Visit(v Visitor) (err error) {
+	if err = n.Expression.Visit(v); err != nil {
+		return err
+	}
+	return v.VisitLogicNot(n)
 }
 
 // LogicOr represents an AST logical OR operator.
@@ -83,8 +91,12 @@ type LogicOr struct {
 }
 
 // Visit implements the Node interface.
-func (n *LogicOr) Visit(v Visitor) {
-	n.Left.Visit(v)
-	n.Right.Visit(v)
-	v.VisitLogicOr(n)
+func (n *LogicOr) Visit(v Visitor) (err error) {
+	if err = n.Left.Visit(v); err != nil {
+		return err
+	}
+	if err = n.Right.Visit(v); err != nil {
+		return err
+	}
+	return v.VisitLogicOr(n)
 }
