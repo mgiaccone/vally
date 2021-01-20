@@ -12,7 +12,7 @@ const (
 )
 
 type SampleStruct struct {
-	Email           string `json:"email" vally:"email;email(.OtherField,strict=true)"`
+	Email           string `json:"email" vally:"email;email(.OtherField,checkmx,strict)"`
 	Country         string `json:"country" vally:"country_code;required() && one_of('GB', 'IT', 'US')"`
 	Other           int    `json:"other" vally:"required()"`                                           // always required
 	DependOnCountry string `vally:"depend_on_country;(eq(.OtherField, 'GB') && required()) || true()"` // required if country=GB
