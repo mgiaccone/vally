@@ -1,3 +1,5 @@
+// +build unit
+
 package scanner_test
 
 import (
@@ -203,6 +205,16 @@ func TestScanner_Scan(t *testing.T) {
 			},
 		},
 		{
+			name:      "simple function named with _",
+			inputExpr: "func_fn()",
+			want: []scanner.TokenType{
+				scanner.IDENT,
+				scanner.LPAREN,
+				scanner.RPAREN,
+				scanner.EOF,
+			},
+		},
+		{
 			name:      "simple function with single string argumant",
 			inputExpr: "fn('string')",
 			want: []scanner.TokenType{
@@ -215,7 +227,7 @@ func TestScanner_Scan(t *testing.T) {
 		},
 		{
 			name:      "simple function with multiple arguments",
-			inputExpr: "fn(.FieldName,'string',-12345,0.1234)",
+			inputExpr: "fn(.Name,'string',-12345,0.1234)",
 			want: []scanner.TokenType{
 				scanner.IDENT,
 				scanner.LPAREN,

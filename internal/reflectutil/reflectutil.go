@@ -24,6 +24,44 @@ func StructKey(s interface{}) string {
 	return name
 }
 
+// func StructType(s interface{}) reflect.Type {
+// 	sv := reflect.ValueOf(s)
+// 	st := sv.Type()
+//
+// 	for st.Kind() == reflect.Ptr {
+// 		st = st.Elem()
+// 	}
+//
+// 	if reflectutil.IsPointer(s) {
+// 		st = st.Elem()
+// 	}
+//
+//
+// 	v := reflect.ValueOf(s)
+//
+//
+// 	if v.Kind() != reflect.Struct {
+// 		panic("not struct")
+// 	}
+//
+// 	return v
+// }
+//
+// func StructType(s interface{}) reflect.Value {
+// 	v := reflect.ValueOf(s)
+//
+// 	// if pointer get the underlying element≤
+// 	for v.Kind() == reflect.Ptr {
+// 		v = v.Elem()
+// 	}
+//
+// 	if v.Kind() != reflect.Struct {
+// 		panic("not struct")
+// 	}
+//
+// 	return v
+// }
+
 func IsNil(i interface{}) bool {
 	if i == nil {
 		return true

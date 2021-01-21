@@ -24,9 +24,19 @@ clean:
 fmt: check-pre
 	@$(GO) fmt $(GO_PKGS)
 
+.PHONY: bench
+bench:
+	@$(GO) test \
+		--tags=bench \
+		-bench=. \
+		-benchmem \
+		./...
+
 .PHONY: test
 test: check-pre
-	@$(GOTEST) -coverprofile=$(TARGET_DIR)/coverage/report.out \
+	@$(GOTEST) \
+		--tags=unit \
+		-coverprofile=$(TARGET_DIR)/coverage/report.out \
 		-count=1 \
 		-failfast \
 		-race \

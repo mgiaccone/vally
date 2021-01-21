@@ -19,30 +19,23 @@ func newEvalVisitor(ctx context.Context, v *Validator, t Target) *evalVisitor {
 	}
 }
 
+// FIXME: add error collection here
+
 type evalVisitor struct {
-	ctx    context.Context
-	t      Target
-	v      *Validator
-	result []bool
+	ctx  context.Context
+	t    Target
+	v    *Validator
+	res  []bool
+	errs []error
 }
 
-func (e *evalVisitor) push(v bool) {
-	e.result = append(e.result, v)
-}
-
-func (e *evalVisitor) pop() bool {
-	if len(e.result) == 0 {
-		return false
-	}
-	var v bool
-	i := len(e.result) - 1
-	v = e.result[i]
-	e.result = e.result[:i]
-	return v
+func (e *evalVisitor) Err() error {
+	// FIXME: add a generic error wrapper to contain all the evaluation errors
+	return nil
 }
 
 func (e *evalVisitor) Result() bool {
-	return e.pop()
+	return e.res[0]
 }
 
 func (e *evalVisitor) VisitFunction(fn *ast.Function) error {
@@ -81,4 +74,18 @@ func (e *evalVisitor) VisitLogicNot(_ *ast.LogicNot) error {
 	v := e.pop()
 	e.push(!v)
 	return nil
+}
+
+func (e *evalVisitor) push(v bool) {
+	e.res = append(e.res, v)
+}
+
+func (e *evalVisitor) pop() bool {
+	if len(e.res) == 0 {
+		return false
+	}
+	var v bool
+	i := len(e.res) - 1
+	v, e.res = e.res[i], e.res[:i]
+	return v
 }

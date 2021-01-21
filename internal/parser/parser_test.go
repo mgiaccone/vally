@@ -1,3 +1,5 @@
+// +build unit
+
 package parser
 
 import (
@@ -15,7 +17,7 @@ func TestParse(t *testing.T) {
 	tests := []struct {
 		name      string
 		inputExpr string
-		want      *ParsedExpr
+		want      ast.Node
 		wantErr   bool
 	}{
 		{
@@ -27,10 +29,10 @@ func TestParse(t *testing.T) {
 		{
 			name:      "function without arguments",
 			inputExpr: "fn()",
-			want: &ParsedExpr{ASTRoot: &ast.Function{
+			want: &ast.Function{
 				Name: "fn",
 				Args: nil,
-			}},
+			},
 			wantErr: false,
 		},
 		{
@@ -54,111 +56,111 @@ func TestParse(t *testing.T) {
 		{
 			name:      "function with single argument (fieldref)",
 			inputExpr: "fn(.Field.Name)",
-			want: &ParsedExpr{ASTRoot: &ast.Function{
+			want: &ast.Function{
 				Name: "fn",
 				Args: []ast.FunctionArg{
 					{
 						FieldRef: ".Field.Name",
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "function with single argument (string)",
 			inputExpr: "fn('string')",
-			want: &ParsedExpr{ASTRoot: &ast.Function{
+			want: &ast.Function{
 				Name: "fn",
 				Args: []ast.FunctionArg{
 					{
 						StringValue: "string",
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "function with single argument (int=0)",
 			inputExpr: "fn(0)",
-			want: &ParsedExpr{ASTRoot: &ast.Function{
+			want: &ast.Function{
 				Name: "fn",
 				Args: []ast.FunctionArg{
 					{
 						IntValue: 0,
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "function with single argument (positive int)",
 			inputExpr: "fn(12345)",
-			want: &ParsedExpr{ASTRoot: &ast.Function{
+			want: &ast.Function{
 				Name: "fn",
 				Args: []ast.FunctionArg{
 					{
 						IntValue: 12345,
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "function with single argument (negative int)",
 			inputExpr: "fn(-12345)",
-			want: &ParsedExpr{ASTRoot: &ast.Function{
+			want: &ast.Function{
 				Name: "fn",
 				Args: []ast.FunctionArg{
 					{
 						IntValue: -12345,
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "function with single argument (float=0.0)",
 			inputExpr: "fn(0.0)",
-			want: &ParsedExpr{ASTRoot: &ast.Function{
+			want: &ast.Function{
 				Name: "fn",
 				Args: []ast.FunctionArg{
 					{
 						FloatValue: 0,
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "function with single argument (positive float)",
 			inputExpr: "fn(0.98765)",
-			want: &ParsedExpr{ASTRoot: &ast.Function{
+			want: &ast.Function{
 				Name: "fn",
 				Args: []ast.FunctionArg{
 					{
 						FloatValue: 0.98765,
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "function with single argument (negative float)",
 			inputExpr: "fn(-0.98765)",
-			want: &ParsedExpr{ASTRoot: &ast.Function{
+			want: &ast.Function{
 				Name: "fn",
 				Args: []ast.FunctionArg{
 					{
 						FloatValue: -0.98765,
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "function with multiple arguments",
 			inputExpr: "fn(.FieldRef, 'string_value', 12345, -12345,0.98765,-0.98765)",
-			want: &ParsedExpr{ASTRoot: &ast.Function{
+			want: &ast.Function{
 				Name: "fn",
 				Args: []ast.FunctionArg{
 					{
@@ -180,44 +182,44 @@ func TestParse(t *testing.T) {
 						FloatValue: -0.98765,
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "negate direct function",
 			inputExpr: "!fn()",
-			want: &ParsedExpr{ASTRoot: &ast.LogicNot{
+			want: &ast.LogicNot{
 				Expression: &ast.Function{
 					Name: "fn",
 					Args: nil,
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "negate grouped function",
 			inputExpr: "!(fn())",
-			want: &ParsedExpr{ASTRoot: &ast.LogicNot{
+			want: &ast.LogicNot{
 				Expression: &ast.Group{
 					Expression: &ast.Function{
 						Name: "fn",
 						Args: nil,
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "root group of negated function",
 			inputExpr: "(!fn())",
-			want: &ParsedExpr{ASTRoot: &ast.Group{
+			want: &ast.Group{
 				Expression: &ast.LogicNot{
 					Expression: &ast.Function{
 						Name: "fn",
 						Args: nil,
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
@@ -229,7 +231,7 @@ func TestParse(t *testing.T) {
 		{
 			name:      "simple logical and expression",
 			inputExpr: "fn1() && fn2()",
-			want: &ParsedExpr{ASTRoot: &ast.LogicAnd{
+			want: &ast.LogicAnd{
 				Left: &ast.Function{
 					Name: "fn1",
 					Args: nil,
@@ -238,13 +240,13 @@ func TestParse(t *testing.T) {
 					Name: "fn2",
 					Args: nil,
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "grouped logical and expression",
 			inputExpr: "(fn1() && fn2())",
-			want: &ParsedExpr{ASTRoot: &ast.Group{
+			want: &ast.Group{
 				Expression: &ast.LogicAnd{
 					Left: &ast.Function{
 						Name: "fn1",
@@ -255,13 +257,13 @@ func TestParse(t *testing.T) {
 						Args: nil,
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "negated grouped logical and expression",
 			inputExpr: "!(fn1() && fn2())",
-			want: &ParsedExpr{ASTRoot: &ast.LogicNot{
+			want: &ast.LogicNot{
 				Expression: &ast.Group{
 					Expression: &ast.LogicAnd{
 						Left: &ast.Function{
@@ -274,7 +276,7 @@ func TestParse(t *testing.T) {
 						},
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
@@ -286,7 +288,7 @@ func TestParse(t *testing.T) {
 		{
 			name:      "simple logical or expression",
 			inputExpr: "fn1() || fn2()",
-			want: &ParsedExpr{ASTRoot: &ast.LogicOr{
+			want: &ast.LogicOr{
 				Left: &ast.Function{
 					Name: "fn1",
 					Args: nil,
@@ -295,13 +297,13 @@ func TestParse(t *testing.T) {
 					Name: "fn2",
 					Args: nil,
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "grouped logical or expression",
 			inputExpr: "(fn1() || fn2())",
-			want: &ParsedExpr{ASTRoot: &ast.Group{
+			want: &ast.Group{
 				Expression: &ast.LogicOr{
 					Left: &ast.Function{
 						Name: "fn1",
@@ -312,13 +314,13 @@ func TestParse(t *testing.T) {
 						Args: nil,
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "simple logical or expression",
 			inputExpr: "!(fn1() || fn2())",
-			want: &ParsedExpr{ASTRoot: &ast.LogicNot{
+			want: &ast.LogicNot{
 				Expression: &ast.Group{
 					Expression: &ast.LogicOr{
 						Left: &ast.Function{
@@ -331,13 +333,13 @@ func TestParse(t *testing.T) {
 						},
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "default logical operator precedence expression #1",
 			inputExpr: "fn1() || fn2() && fn3()",
-			want: &ParsedExpr{ASTRoot: &ast.LogicOr{
+			want: &ast.LogicOr{
 				Left: &ast.Function{
 					Name: "fn1",
 					Args: nil,
@@ -352,13 +354,13 @@ func TestParse(t *testing.T) {
 						Args: nil,
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "default logical operator precedence expression #2",
 			inputExpr: "fn1() && fn2() || fn3()",
-			want: &ParsedExpr{ASTRoot: &ast.LogicOr{
+			want: &ast.LogicOr{
 				Left: &ast.LogicAnd{
 					Left: &ast.Function{
 						Name: "fn1",
@@ -373,13 +375,13 @@ func TestParse(t *testing.T) {
 					Name: "fn3",
 					Args: nil,
 				},
-			}},
+			},
 			wantErr: false,
 		},
 		{
 			name:      "group overrides default logical operator precedence",
 			inputExpr: "fn1() && (fn2() || fn3())",
-			want: &ParsedExpr{ASTRoot: &ast.LogicAnd{
+			want: &ast.LogicAnd{
 				Left: &ast.Function{
 					Name: "fn1",
 					Args: nil,
@@ -396,7 +398,7 @@ func TestParse(t *testing.T) {
 						},
 					},
 				},
-			}},
+			},
 			wantErr: false,
 		},
 	}

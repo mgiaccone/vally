@@ -7,3 +7,9 @@ func WithDefaultValidators() Option {
 		v.funcs = defaultFuncs()
 	}
 }
+
+func WithStructTag(tag string) Option {
+	return func(v *Validator) {
+		v.structTag = tag
+	}
+}

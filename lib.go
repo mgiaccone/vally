@@ -2,7 +2,6 @@ package vally
 
 import (
 	"context"
-	"io"
 
 	"github.com/osl4b/vally/validator"
 )
@@ -32,6 +31,6 @@ func ValidateStruct(ctx context.Context, s interface{}) error {
 	return _defaultValidator.ValidateStruct(ctx, s)
 }
 
-func ValidateValue(ctx context.Context, expr io.Reader, value interface{}) error {
+func ValidateValue(ctx context.Context, expr string, value interface{}) error {
 	return _defaultValidator.ValidateValue(ctx, expr, value)
 }

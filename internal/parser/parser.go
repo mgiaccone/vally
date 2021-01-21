@@ -50,7 +50,9 @@ func parseExpression(s Scanner, inGroup bool) (ast.Node, error) {
 			if err != nil {
 				return nil, fmt.Errorf("group: %w", err)
 			}
-			breakout = true
+			if inGroup {
+				breakout = true
+			}
 		case scanner.RPAREN:
 			if inGroup {
 				breakout = true

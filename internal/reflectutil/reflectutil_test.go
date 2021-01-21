@@ -1,3 +1,5 @@
+// +build unit
+
 package reflectutil_test
 
 import (

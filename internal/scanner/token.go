@@ -26,7 +26,8 @@ const (
 	STRING   // 'string'
 	FLOAT    // 1.23434
 	INT      // 123456
-	FIELDREF // .FieldName
+	FIELDREF // .Name
+	FLAG     // flag1
 )
 
 var _tokenTypes = []string{
@@ -43,6 +44,7 @@ var _tokenTypes = []string{
 	"FLOAT",
 	"INT",
 	"FIELDREF",
+	"FLAG",
 }
 
 func (t TokenType) String() string {

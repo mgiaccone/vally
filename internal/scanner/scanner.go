@@ -145,6 +145,30 @@ func scanFielfRefLiteral(s *Scanner, buf *strings.Builder) error {
 	}
 }
 
+// func scanFlagLiteral(s *Scanner, buf *strings.Builder) error {
+// 	// make sure the literal buffer for the string is empty
+// 	buf.Reset()
+//
+// 	var ch rune
+// 	for {
+// 		ch = s.read()
+//
+// 		switch ch {
+// 		case eof:
+// 			return nil
+// 		case '(', ')', ',', ' ':
+// 			s.backup()
+// 			return nil
+// 		default:
+// 			if isIdentLiteral(ch) || ch == '_' {
+// 				buf.WriteRune(ch)
+// 				continue
+// 			}
+// 			return fmt.Errorf("illegal flag character %q", string(ch))
+// 		}
+// 	}
+// }
+
 func scanIdentLiteral(s *Scanner, buf *strings.Builder) error {
 	// make sure the literal buffer for the string is empty
 	buf.Reset()
@@ -160,7 +184,7 @@ func scanIdentLiteral(s *Scanner, buf *strings.Builder) error {
 			s.backup()
 			return nil
 		default:
-			if isIdentLiteral(ch) {
+			if isIdentLiteral(ch) || ch == '_' {
 				buf.WriteRune(ch)
 				continue
 			}
@@ -326,12 +350,20 @@ func isFieldRefLiteral(ch rune) bool {
 	return unicode.IsLetter(ch) || ch == '.'
 }
 
-func isIdentPrefix(ch rune) bool {
-	return unicode.IsLower(ch)
-}
+// func isFlagLiteral(ch rune) bool {
+// 	return unicode.IsLetter(ch) || unicode.IsDigit(ch) || ch == '_'
+// }
+//
+// func isFlagPrefix(ch rune) bool {
+// 	return unicode.IsLower(ch)
+// }
 
 func isIdentLiteral(ch rune) bool {
-	return unicode.IsLetter(ch) || unicode.IsDigit(ch)
+	return unicode.IsLetter(ch) || unicode.IsDigit(ch) || ch == '_'
+}
+
+func isIdentPrefix(ch rune) bool {
+	return unicode.IsLower(ch)
 }
 
 func isNumberPrefix(ch rune) bool {
