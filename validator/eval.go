@@ -45,7 +45,7 @@ func (e *evalVisitor) VisitFunction(fn *ast.Function) error {
 	}
 
 	// FIXME: add evaluation target here
-	res, err := f(e.ctx, nil)
+	res, err := f(e.ctx, []Arg{}, nil)
 	if err != nil {
 		return fmt.Errorf("evaluate %q: %w", fn.Name, err)
 	}

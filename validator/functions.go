@@ -11,7 +11,7 @@ var (
 	Email   = RegexpMatch(reEmail)
 )
 
-func defaultFuncs() map[string]Function {
+func defaultFunctions() map[string]Function {
 	return map[string]Function{
 		"false":    False,
 		"true":     True,

@@ -60,7 +60,7 @@ func NewValidator(opts ...Option) *Validator {
 		apply(v)
 	}
 	if v.funcs == nil {
-		v.funcs = defaultFuncs()
+		v.funcs = defaultFunctions()
 	}
 	return v
 }

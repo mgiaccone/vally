@@ -24,6 +24,47 @@ func StructKey(s interface{}) string {
 	return name
 }
 
+func IsNil(i interface{}) bool {
+	if i == nil {
+		return true
+	}
+
+	switch reflect.TypeOf(i).Kind() {
+	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
+		return reflect.ValueOf(i).IsNil()
+	}
+
+	return false
+}
+
+func IsPointer(i interface{}) bool {
+	return reflect.ValueOf(i).Type().Kind() == reflect.Ptr
+}
+
+// // IsZero return true if underlying type is equal to its zero value
+// func (v Value) IsZero() bool {
+// 	if zeroer, k := v.Zeroer(); k {
+// 		return zeroer.IsZero()
+// 	}
+// 	if v.IsNil() {
+// 		return true
+// 	}
+// 	t := v.Type()
+// 	switch t.Kind() {
+// 	case reflect.Map:
+// 		return v.Len() == 0
+// 	case reflect.Chan:
+// 		return v.Len() == 0
+// 	case reflect.Slice:
+// 		s := t.NewSlice()
+// 		return reflect.DeepEqual(v.Interface(), s.Interface())
+// 	case reflect.Ptr:
+// 		return v.Indirect().IsZero()
+// 	default:
+// 		return reflect.DeepEqual(v.Interface(), t.Zero().InterfaceOrNil())
+// 	}
+// }
+//
 // func StructType(s interface{}) reflect.Type {
 // 	sv := reflect.ValueOf(s)
 // 	st := sv.Type()
@@ -35,7 +76,6 @@ func StructKey(s interface{}) string {
 // 	if reflectutil.IsPointer(s) {
 // 		st = st.Elem()
 // 	}
-//
 //
 // 	v := reflect.ValueOf(s)
 //
@@ -61,20 +101,3 @@ func StructKey(s interface{}) string {
 //
 // 	return v
 // }
-
-func IsNil(i interface{}) bool {
-	if i == nil {
-		return true
-	}
-
-	switch reflect.TypeOf(i).Kind() {
-	case reflect.Ptr, reflect.Map, reflect.Array, reflect.Chan, reflect.Slice:
-		return reflect.ValueOf(i).IsNil()
-	}
-
-	return false
-}
-
-func IsPointer(i interface{}) bool {
-	return reflect.ValueOf(i).Type().Kind() == reflect.Ptr
-}
