@@ -23,23 +23,39 @@ func TestValidator_RegisterStruct(t *testing.T) {
 
 func TestValidator_ValidateStruct(t *testing.T) {
 	type testStruct struct {
-		Email           string `vally:"email;required() && email()"`
-		Country         string `vally:"country_code;required() && one_of('GB', 'IT', 'US')"`
-		Other           int    `vally:"required()"`
-		DependOnCountry string `vally:"depend_on_country;(eq(.OtherField, 'GB') && required()) || true()"`
-		NoTag           string
-		Ignored         string `vally:"-"`
-		SelfReplaced    string `vally:"(eq(.OtherField, 'GB') && required(    )) || true() || eq('GB') && eq(1234)"`
+		Email      string   `vally:"email;email()"`
+		EmailSlice []string `vally:"emails;email()"`
+		Required   string   `vally:"required;required()"`
+		Ignored    string   `vally:"-"`
+		NoTag      string
 	}
 	v := testStruct{
-		Email:           "test@example.com",
-		Country:         "GB",
-		Other:           100,
-		DependOnCountry: "Test",
-		NoTag:           "Ignore",
-		Ignored:         "Ignore",
-		SelfReplaced:    "X",
+		Email:    "test@example.com",
+		Required: "GB",
+		NoTag:    "NoTag",
+		Ignored:  "Ignore",
 	}
 	err := NewValidator().ValidateStruct(context.Background(), v)
 	require.NoError(t, err, "ValidateStruct() error = %v", err)
+}
+
+func TestValidator_ValidateValue(t *testing.T) {
+	tests := []struct {
+		name    string
+		expr    string
+		value   interface{}
+		wantErr bool
+	}{
+		{
+			name: "",
+		},
+	}
+	for _, tt := range tests {
+		tt := tt
+		t.Run(tt.name, func(t *testing.T) {
+			if err := NewValidator().ValidateValue(context.Background(), tt.expr, tt.value); (err != nil) != tt.wantErr {
+				t.Errorf("ValidateValue() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
 }

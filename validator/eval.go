@@ -73,6 +73,8 @@ func (ev *evalVisitor) VisitFunction(fn *ast.Function) error {
 		return fmt.Errorf("eval context %q: %w", fn.Name, err)
 	}
 
+	// TODO: check argument types against required types
+
 	res, err := f.Evaluate(ev.ctx, ec, ev.t)
 	if err != nil {
 		fe, ok := err.(*FieldError)

@@ -67,10 +67,6 @@ type EvalContext interface {
 	FunctionName() string
 }
 
-// Target wraps the targer being validated
-type Target interface {
-}
-
 // Validator
 type Validator struct {
 	funcs           map[string]Function
@@ -144,17 +140,14 @@ func (v *Validator) ValidateStruct(ctx context.Context, val interface{}) error {
 		return fmt.Errorf("evaluate expression: %w", err)
 	}
 
-	result := ev.Result()
-	fmt.Println(result)
-
 	return ev.Err()
 }
 
-// ValidateValue
+// ValidateValue applies the validation expression to the given value.
+//
+// It returns an error of type validator.Error validation fails or a generic error
+// if other issues are detected.
 func (v *Validator) ValidateValue(ctx context.Context, expr string, value interface{}) error {
-	// TODO: expr should not have .FieldRef or they should be stripped off/replaced to .Value (???)
-	// i.e. map[]interface { ".Value", vvvv }
-
 	r := strings.NewReader(expr)
 	parsedExpr, err := parser.Parse(scanner.New(r))
 	if err != nil {
@@ -164,10 +157,8 @@ func (v *Validator) ValidateValue(ctx context.Context, expr string, value interf
 	if err := parsedExpr.Visit(ev); err != nil {
 		return err
 	}
-	if !ev.Result() {
-		return fmt.Errorf("not valid")
-	}
-	return nil
+
+	return ev.Err()
 }
 
 // retrieveOrBuildStructEntry
