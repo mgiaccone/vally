@@ -16,8 +16,8 @@ var (
 )
 
 // patchExprRegex rewrites the expression adding the given fieldRef to any function
-// that doesn't explicitly declare one. This version uses regular expressions, uses
-// less memory but takes about 5x times than patchExprScanner
+// that doesn't explicitly declare one.
+// This version uses regular expressions to perform the job.
 //
 // For instance the given the fieldRef ".SomeField" and the expression "require()",
 // the output expression will become "require(.SomeField)".
@@ -46,8 +46,9 @@ func patchExprRegex(expr, fieldRef string) string {
 }
 
 // patchExprScanner rewrites the expression adding the given fieldRef to any function
-// that doesn't explicitly declare one. This version uses a scanner to perform the job
-// uses more memory but is about 5x faster than patchExprRegex
+// that doesn't explicitly declare one.
+// This version uses a scanner to perform the job, this implementation is about 5x faster
+// than patchExprRegex and uses roughly the same amount of memory.
 //
 // For instance the given the fieldRef ".SomeField" and the expression "require()",
 // the output expression will become "require(.SomeField)".
@@ -57,7 +58,7 @@ func patchExprScanner(expr, fieldRef string) (string, error) {
 		ch  rune
 		err error
 	)
-	br := bufio.NewReader(strings.NewReader(expr))
+	br := bufio.NewReaderSize(strings.NewReader(expr), 256)
 	for {
 		ch, _, err = br.ReadRune()
 		if errors.Is(err, io.EOF) {

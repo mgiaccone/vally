@@ -31,14 +31,32 @@ type fieldEntry struct {
 	FieldRef string
 }
 
-// Function represents a validator function signature
-type Function func(ctx context.Context, args []Arg, t Target) (bool, error)
+type ArgType int8
 
-type Arg struct {
-	raw ast.FunctionArg
+const (
+	_invalidArgType ArgType = iota
+	FieldRef
+	String
+	Int
+	Float
+)
+
+type Function func(ctx context.Context, ec EvalContext, t Target) (bool, error)
+
+// // Function represents a validator function signature
+// type Function interface {
+// 	ArgTypes() []ArgType
+// 	ErrCodes() []string
+// 	Evaluate(ctx context.Context, ec EvalContext, t Target) (bool, error)
+// }
+
+// EvalContext represents the evaluation context of the function being processed.
+type EvalContext interface {
+	FieldRef() string
+	FunctionName() string
 }
 
-// Target
+// Target wraps the targer being validated
 type Target interface {
 }
 
@@ -110,7 +128,7 @@ func (v *Validator) ValidateStruct(ctx context.Context, val interface{}) error {
 		return fmt.Errorf("struct: %w", err)
 	}
 
-	ev := newEvalVisitor(ctx, v, val)
+	ev := newEvalVisitor(ctx, v, newStructTarget(val))
 	if err = entry.validExpr.Visit(ev); err != nil {
 		return fmt.Errorf("evaluate expression: %w", err)
 	}
@@ -123,7 +141,8 @@ func (v *Validator) ValidateStruct(ctx context.Context, val interface{}) error {
 
 // ValidateValue
 func (v *Validator) ValidateValue(ctx context.Context, expr string, value interface{}) error {
-	// TODO: expr should not have .FieldRef or they should be stripped off
+	// TODO: expr should not have .FieldRef or they should be stripped off/replaced to .Value (???)
+	// i.e. map[]interface { ".Value", vvvv }
 
 	r := strings.NewReader(expr)
 	parsedExpr, err := parser.Parse(scanner.New(r))
@@ -255,8 +274,4 @@ func (v *Validator) lookupFunction(id string) (Function, error) {
 		return fn, nil
 	}
 	return nil, ErrNotFound
-}
-
-func mapStructValues(s interface{}, prefix string) map[string]interface{} {
-	return nil
 }

@@ -8,7 +8,19 @@ var (
 	ErrNotFound = errors.New("not found")
 )
 
-type ValidationError struct {
+type Error struct {
+	FieldErrs []FieldError
+}
+
+func (e *Error) Error() string {
+	return ""
+}
+
+func (e *Error) Unwrap() error {
+	return nil
+}
+
+type FieldError struct {
 	ErrCode       string
 	FieldFullPath string
 	FieldName     string
@@ -18,10 +30,10 @@ type ValidationError struct {
 	FunctionName  string
 }
 
-func (e *ValidationError) Error() string {
+func (fe *FieldError) Error() string {
 	return ""
 }
 
-func (e *ValidationError) Unwrap() error {
+func (fe *FieldError) Unwrap() error {
 	return nil
 }

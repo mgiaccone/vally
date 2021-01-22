@@ -2,6 +2,7 @@ package validator
 
 import (
 	"context"
+	"fmt"
 	"regexp"
 )
 
@@ -21,17 +22,19 @@ func defaultFunctions() map[string]Function {
 }
 
 // False always evaluates to false
-func False(_ context.Context, _ []Arg, _ Target) (bool, error) {
+func False(_ context.Context, _ EvalContext, _ Target) (bool, error) {
 	return false, nil
 }
 
 // True always evaluates to true
-func True(_ context.Context, _ []Arg, _ Target) (bool, error) {
+func True(_ context.Context, _ EvalContext, _ Target) (bool, error) {
 	return true, nil
 }
 
 // Required evaluates to true if the value does not equal to the type's default value, false otherwise.
-func Required(ctx context.Context, args []Arg, t Target) (bool, error) {
+func Required(ctx context.Context, ec EvalContext, t Target) (bool, error) {
+	fmt.Println("FN: ", ec.FunctionName(), " | FIELD: ", ec.FieldRef())
+
 	// nolint:godox
 	// FIXME: missing implementation
 	return false, nil
@@ -39,7 +42,9 @@ func Required(ctx context.Context, args []Arg, t Target) (bool, error) {
 
 // RegexpMatch returns a validator functions that uses the given regexp to validate the target.
 func RegexpMatch(re *regexp.Regexp) Function {
-	return func(ctx context.Context, args []Arg, t Target) (bool, error) {
+	return func(ctx context.Context, ec EvalContext, t Target) (bool, error) {
+		fmt.Println("FN: ", ec.FunctionName(), " | FIELD: ", ec.FieldRef())
+
 		// nolint:godox
 		// TODO: get value as string
 
