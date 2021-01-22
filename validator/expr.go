@@ -16,11 +16,11 @@ var (
 )
 
 // patchExprRegex rewrites the expression adding the given fieldRef to any function
-// that doesn't explicitly declare one.
-// This version uses regular expressions to perform the job.
+// that doesn't explicitly declare one. For instance the given the fieldRef ".SomeField"
+// and the expression "require()", the output expression will become "require(.SomeField)".
 //
-// For instance the given the fieldRef ".SomeField" and the expression "require()",
-// the output expression will become "require(.SomeField)".
+// This version uses regular expressions to perform the job and is slower than patchExprScanner.
+//
 func patchExprRegex(expr, fieldRef string) string {
 	var (
 		buf      strings.Builder
@@ -46,12 +46,12 @@ func patchExprRegex(expr, fieldRef string) string {
 }
 
 // patchExprScanner rewrites the expression adding the given fieldRef to any function
-// that doesn't explicitly declare one.
+// that doesn't explicitly declare one. For instance the given the fieldRef ".SomeField"
+// and the expression "require()", the output expression will become "require(.SomeField)".
+//
 // This version uses a scanner to perform the job, this implementation is about 5x faster
 // than patchExprRegex and uses roughly the same amount of memory.
 //
-// For instance the given the fieldRef ".SomeField" and the expression "require()",
-// the output expression will become "require(.SomeField)".
 func patchExprScanner(expr, fieldRef string) (string, error) {
 	var (
 		buf strings.Builder

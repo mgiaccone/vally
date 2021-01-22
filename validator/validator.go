@@ -67,7 +67,7 @@ type EvalContext interface {
 	FunctionName() string
 }
 
-// Validator
+// Validator contains the implementation of the validation logic.
 type Validator struct {
 	funcs           map[string]Function
 	structCache     map[string]structEntry
@@ -124,7 +124,9 @@ func (v *Validator) RegisterStruct(s interface{}) error {
 	return nil
 }
 
-// ValidateStruct
+// ValidateStruct processes a struct value and applies the validation expressions
+// as given in each property tag.
+//
 func (v *Validator) ValidateStruct(ctx context.Context, val interface{}) error {
 	if reflectutil.IsNil(val) {
 		return fmt.Errorf("value must not be nil")
