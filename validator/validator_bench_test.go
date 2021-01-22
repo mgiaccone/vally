@@ -1,5 +1,3 @@
-// +build bench
-
 package validator
 
 import (
@@ -7,10 +5,12 @@ import (
 )
 
 var (
-	benchErr error
+	_registerStructBenchErr error
 )
 
 func BenchmarkValidator_RegisterStruct(b *testing.B) {
+	b.ReportAllocs()
+
 	type benchStruct struct {
 		Email           string `json:"email" vally:"email;email(.OtherField)"`
 		Country         string `json:"country" vally:"country_code;required() && one_of('GB', 'IT', 'US')"`
@@ -27,5 +27,5 @@ func BenchmarkValidator_RegisterStruct(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		err = v.RegisterStruct(benchStruct{})
 	}
-	benchErr = err
+	_registerStructBenchErr = err
 }

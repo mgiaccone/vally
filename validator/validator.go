@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"reflect"
-	"regexp"
 	"strings"
 	"sync"
 
@@ -20,11 +19,6 @@ const (
 	_defaultStructTag = "vally"
 )
 
-var (
-	reEmptyArgs = regexp.MustCompile(`\(\s*\)`)
-	reSelfRef   = regexp.MustCompile(`([a-z0-9])(?P<self>\()(\)|[^\.])`)
-)
-
 type structEntry struct {
 	fields    []fieldEntry
 	validExpr ast.Node
@@ -38,7 +32,11 @@ type fieldEntry struct {
 }
 
 // Function represents a validator function signature
-type Function func(ctx context.Context, t Target) (bool, error)
+type Function func(ctx context.Context, args []Arg, t Target) (bool, error)
+
+type Arg struct {
+	raw ast.FunctionArg
+}
 
 // Target
 type Target interface {
@@ -102,25 +100,31 @@ func (v *Validator) RegisterStruct(s interface{}) error {
 }
 
 // ValidateStruct
-func (v *Validator) ValidateStruct(ctx context.Context, value interface{}) error {
-	if reflectutil.IsNil(value) {
+func (v *Validator) ValidateStruct(ctx context.Context, val interface{}) error {
+	if reflectutil.IsNil(val) {
 		return fmt.Errorf("value must not be nil")
 	}
 
-	entry, err := v.retrieveOrBuildStructEntry(value)
+	entry, err := v.retrieveOrBuildStructEntry(val)
 	if err != nil {
-		return fmt.Errorf("struct : %w", err)
+		return fmt.Errorf("struct: %w", err)
 	}
 
-	_ = entry
+	ev := newEvalVisitor(ctx, v, val)
+	if err = entry.validExpr.Visit(ev); err != nil {
+		return fmt.Errorf("evaluate expression: %w", err)
+	}
 
-	// nolint:godox
-	// FIXME: missing implementation
-	return nil
+	result := ev.Result()
+	fmt.Println(result)
+
+	return ev.Err()
 }
 
 // ValidateValue
 func (v *Validator) ValidateValue(ctx context.Context, expr string, value interface{}) error {
+	// TODO: expr should not have .FieldRef or they should be stripped off
+
 	r := strings.NewReader(expr)
 	parsedExpr, err := parser.Parse(scanner.New(r))
 	if err != nil {
@@ -138,7 +142,7 @@ func (v *Validator) ValidateValue(ctx context.Context, expr string, value interf
 
 // retrieveOrBuildStructEntry
 // nolint:godox
-// TODO: simplify this function
+// TODO: simplify this monster function
 func (v *Validator) retrieveOrBuildStructEntry(s interface{}) (*structEntry, error) {
 	if reflectutil.IsNil(s) {
 		return nil, fmt.Errorf("value must not be nil")
@@ -219,7 +223,11 @@ func (v *Validator) retrieveOrBuildStructEntry(s interface{}) (*structEntry, err
 		if buf.Len() != 0 {
 			buf.WriteString("&&")
 		}
-		fp.Expr = patchExpr(fp.Expr, fp.FieldRef)
+		// fp.Expr = patchExprRegex(fp.Expr, fp.FieldRef)
+		fp.Expr, err = patchExprScanner(fp.Expr, fp.FieldRef)
+		if err != nil {
+			return nil, fmt.Errorf("field %q: %w", fp.Name, err)
+		}
 
 		buf.WriteString("(")
 		buf.WriteString(fp.Expr)
@@ -251,34 +259,4 @@ func (v *Validator) lookupFunction(id string) (Function, error) {
 
 func mapStructValues(s interface{}, prefix string) map[string]interface{} {
 	return nil
-}
-
-// patchExpr rewrites the expression adding the given fieldRef to any function
-// that doesn't explicitly declare one.
-//
-// For instance the given the fieldRef ".SomeField" and the expression "require()",
-// the output expression will become "require(.SomeField)".
-func patchExpr(expr, fieldRef string) string {
-	expr = reEmptyArgs.ReplaceAllString(expr, "$1("+fieldRef+")")
-
-	var (
-		buf      strings.Builder
-		match    []int
-		group    int
-		groupIdx int
-		pivot    int
-	)
-	for _, match = range reSelfRef.FindAllStringIndex(expr, -1) {
-		for groupIdx, group = range match {
-			if groupIdx != 1 {
-				continue
-			}
-			buf.WriteString(expr[pivot : group-1])
-			buf.WriteString(fieldRef)
-			buf.WriteString(",")
-			pivot = group - 1
-		}
-	}
-	buf.WriteString(expr[pivot:])
-	return buf.String()
 }

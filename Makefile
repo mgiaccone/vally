@@ -27,15 +27,13 @@ fmt: check-pre
 .PHONY: bench
 bench:
 	@$(GO) test \
-		--tags=bench \
+		-run=notest \
 		-bench=. \
-		-benchmem \
-		./...
+		-v ./...
 
 .PHONY: test
 test: check-pre
 	@$(GOTEST) \
-		--tags=unit \
 		-coverprofile=$(TARGET_DIR)/coverage/report.out \
 		-count=1 \
 		-failfast \

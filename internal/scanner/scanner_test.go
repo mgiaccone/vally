@@ -1,5 +1,3 @@
-// +build unit
-
 package scanner_test
 
 import (
@@ -277,7 +275,6 @@ func TestScanner_Scan(t *testing.T) {
 				if tok.Type == scanner.EOF {
 					break
 				}
-				t.Log(tok)
 			}
 			require.EqualValues(t, tt.want, got, "Scan() = %v, want %v", got, tt.want)
 		})
