@@ -13,6 +13,7 @@ import (
 	"github.com/osl4b/vally/internal/parser"
 	"github.com/osl4b/vally/internal/reflectutil"
 	"github.com/osl4b/vally/internal/scanner"
+	"github.com/osl4b/vally/sdk"
 )
 
 const (
@@ -31,45 +32,9 @@ type fieldEntry struct {
 	FieldRef string
 }
 
-type ArgType int
-
-// TODO: bitmask operations examples here:
-//  https://yourbasic.org/golang/bitmask-flag-set-clear/
-const (
-	FieldRef ArgType = 1 << iota
-	String
-	Int
-	Float
-	StringArray
-	IntArray
-	FloatArray
-	Any
-)
-
-// Function represents the minimal methods a validation function must implement.
-type Function interface {
-	ArgTypes() []ArgType
-	Evaluate(ctx context.Context, ec EvalContext, t Target) (bool, error)
-}
-
-// TODO: This could be used to provide exteded function metadata.
-//  For instance, returning all the possible error codes a function might return
-//  will make it easier to check if all the registered functions have an error message
-//  for all the possible error codes, etc...
-//
-// type FunctionMeta interface {
-// 	ErrCodes() []string
-// }
-
-// EvalContext represents the evaluation context of the function being processed.
-type EvalContext interface {
-	FieldRef() string
-	FunctionName() string
-}
-
 // Validator contains the implementation of the validation logic.
 type Validator struct {
-	funcs           map[string]Function
+	funcs           map[string]sdk.Function
 	structCache     map[string]structEntry
 	structCacheLock sync.Mutex
 	structTag       string
@@ -92,13 +57,13 @@ func NewValidator(opts ...Option) *Validator {
 
 // MustRegister adds a validator function with the given id.
 // It will panic if a function with the same id is already registered.
-func (v *Validator) MustRegister(id string, fn Function) {
+func (v *Validator) MustRegister(id string, fn sdk.Function) {
 	errutil.Must(v.Register(id, fn))
 }
 
 // Register adds a validator function with the given id.
 // It will return an error if a function with the same id is already registered, nil otherwise.
-func (v *Validator) Register(id string, fn Function) error {
+func (v *Validator) Register(id string, fn sdk.Function) error {
 	if _, exists := v.funcs[id]; exists {
 		return fmt.Errorf("function %q is already registered", id)
 	}
@@ -107,7 +72,7 @@ func (v *Validator) Register(id string, fn Function) error {
 }
 
 // Replace adds or replace the validator function with the given id.
-func (v *Validator) Replace(id string, fn Function) {
+func (v *Validator) Replace(id string, fn sdk.Function) {
 	v.funcs[id] = fn
 }
 
@@ -124,9 +89,8 @@ func (v *Validator) RegisterStruct(s interface{}) error {
 	return nil
 }
 
-// ValidateStruct processes a struct value and applies the validation expressions
-// as given in each property tag.
-//
+// ValidateStruct processes a struct value and applies the validation
+// expressions as given in each property tag.
 func (v *Validator) ValidateStruct(ctx context.Context, val interface{}) error {
 	if reflectutil.IsNil(val) {
 		return fmt.Errorf("value must not be nil")
@@ -271,7 +235,7 @@ func (v *Validator) retrieveOrBuildStructEntry(s interface{}) (*structEntry, err
 }
 
 // lookupFunction returns the validator function with the given id or an error if the function is not registered.
-func (v *Validator) lookupFunction(id string) (Function, error) {
+func (v *Validator) lookupFunction(id string) (sdk.Function, error) {
 	if fn, exists := v.funcs[id]; exists {
 		return fn, nil
 	}

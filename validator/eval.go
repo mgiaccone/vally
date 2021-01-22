@@ -5,11 +5,12 @@ import (
 	"fmt"
 
 	"github.com/osl4b/vally/internal/ast"
+	"github.com/osl4b/vally/sdk"
 )
 
 var (
-	_ ast.Visitor = (*evalVisitor)(nil)
-	_ EvalContext = (*evalContext)(nil)
+	_ ast.Visitor     = (*evalVisitor)(nil)
+	_ sdk.EvalContext = (*evalContext)(nil)
 )
 
 type evalContext struct {
@@ -37,13 +38,13 @@ func (ec *evalContext) FunctionName() string {
 
 type evalVisitor struct {
 	ctx  context.Context
-	t    Target
+	t    sdk.Target
 	v    *Validator
 	res  []bool
 	errs []error
 }
 
-func newEvalVisitor(ctx context.Context, v *Validator, t Target) *evalVisitor {
+func newEvalVisitor(ctx context.Context, v *Validator, t sdk.Target) *evalVisitor {
 	return &evalVisitor{
 		ctx: ctx,
 		v:   v,

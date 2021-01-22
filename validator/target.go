@@ -2,17 +2,14 @@ package validator
 
 import (
 	"fmt"
+
+	"github.com/osl4b/vally/sdk"
 )
 
 var (
-	_ Target = (*structTarget)(nil)
-	_ Target = (*valueTarget)(nil)
+	_ sdk.Target = (*structTarget)(nil)
+	_ sdk.Target = (*valueTarget)(nil)
 )
-
-// Target wraps the targer being validated
-type Target interface {
-	ValueOf(fieldRef string) (interface{}, error)
-}
 
 type structTarget struct {
 	values map[string]interface{}

@@ -2,6 +2,7 @@ package validator
 
 import (
 	"errors"
+	"fmt"
 )
 
 var (
@@ -13,11 +14,7 @@ type Error struct {
 }
 
 func (e *Error) Error() string {
-	return ""
-}
-
-func (e *Error) Unwrap() error {
-	return nil
+	return fmt.Sprintf("validation failed with %d error(s)", len(e.FieldErrs))
 }
 
 type FieldError struct {
@@ -31,9 +28,6 @@ type FieldError struct {
 }
 
 func (fe *FieldError) Error() string {
+	// FIXME: missing implementation
 	return ""
-}
-
-func (fe *FieldError) Unwrap() error {
-	return nil
 }
