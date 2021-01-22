@@ -14,44 +14,64 @@ var (
 
 func defaultFunctions() map[string]Function {
 	return map[string]Function{
-		"false":    False,
-		"true":     True,
-		"required": Required,
+		"false":    &False{},
+		"true":     &True{},
+		"required": &Required{},
 		"email":    Email,
 	}
 }
 
 // False always evaluates to false
-func False(_ context.Context, _ EvalContext, _ Target) (bool, error) {
+type False struct{}
+
+func (f *False) ArgTypes() []ArgType { return nil }
+
+func (f *False) Evaluate(_ context.Context, _ EvalContext, _ Target) (bool, error) {
 	return false, nil
 }
 
 // True always evaluates to true
-func True(_ context.Context, _ EvalContext, _ Target) (bool, error) {
+type True struct{}
+
+func (f *True) ArgTypes() []ArgType { return nil }
+
+func (f *True) Evaluate(ctx context.Context, ec EvalContext, t Target) (bool, error) {
 	return true, nil
 }
 
 // Required evaluates to true if the value does not equal to the type's default value, false otherwise.
-func Required(ctx context.Context, ec EvalContext, t Target) (bool, error) {
+type Required struct{}
+
+func (f *Required) ArgTypes() []ArgType {
+	return []ArgType{Any}
+}
+
+func (f *Required) Evaluate(ctx context.Context, ec EvalContext, t Target) (bool, error) {
 	fmt.Println("FN: ", ec.FunctionName(), " | FIELD: ", ec.FieldRef())
 
-	// nolint:godox
 	// FIXME: missing implementation
 	return false, nil
 }
 
-// RegexpMatch returns a validator functions that uses the given regexp to validate the target.
+// regex evaluates the given regular expression against the target.
+type regex struct {
+	re *regexp.Regexp
+}
+
+func (f *regex) ArgTypes() []ArgType { return nil }
+
+func (f *regex) Evaluate(ctx context.Context, ec EvalContext, t Target) (bool, error) {
+	fmt.Println("FN: ", ec.FunctionName(), " | FIELD: ", ec.FieldRef())
+
+	// TODO: get value as string
+
+	// re.M
+
+	// FIXME: missing implementation
+	return false, nil
+}
+
+// RegexpMatch builds a validator function that uses a regular expression to validate the target.
 func RegexpMatch(re *regexp.Regexp) Function {
-	return func(ctx context.Context, ec EvalContext, t Target) (bool, error) {
-		fmt.Println("FN: ", ec.FunctionName(), " | FIELD: ", ec.FieldRef())
-
-		// nolint:godox
-		// TODO: get value as string
-
-		// re.M
-
-		// nolint:godox
-		// FIXME: missing implementation
-		return false, nil
-	}
+	return &regex{re: re}
 }

@@ -9,7 +9,7 @@ var (
 )
 
 type Error struct {
-	FieldErrs []FieldError
+	FieldErrs []error
 }
 
 func (e *Error) Error() string {

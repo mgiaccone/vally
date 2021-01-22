@@ -31,23 +31,34 @@ type fieldEntry struct {
 	FieldRef string
 }
 
-type ArgType int8
+type ArgType int
 
+// TODO: bitmask operations examples here:
+//  https://yourbasic.org/golang/bitmask-flag-set-clear/
 const (
-	_invalidArgType ArgType = iota
-	FieldRef
+	FieldRef ArgType = 1 << iota
 	String
 	Int
 	Float
+	StringArray
+	IntArray
+	FloatArray
+	Any
 )
 
-type Function func(ctx context.Context, ec EvalContext, t Target) (bool, error)
+// Function represents the minimal methods a validation function must implement.
+type Function interface {
+	ArgTypes() []ArgType
+	Evaluate(ctx context.Context, ec EvalContext, t Target) (bool, error)
+}
 
-// // Function represents a validator function signature
-// type Function interface {
-// 	ArgTypes() []ArgType
+// TODO: This could be used to provide exteded function metadata.
+//  For instance, returning all the possible error codes a function might return
+//  will make it easier to check if all the registered functions have an error message
+//  for all the possible error codes, etc...
+//
+// type FunctionMeta interface {
 // 	ErrCodes() []string
-// 	Evaluate(ctx context.Context, ec EvalContext, t Target) (bool, error)
 // }
 
 // EvalContext represents the evaluation context of the function being processed.
@@ -160,7 +171,6 @@ func (v *Validator) ValidateValue(ctx context.Context, expr string, value interf
 }
 
 // retrieveOrBuildStructEntry
-// nolint:godox
 // TODO: simplify this monster function
 func (v *Validator) retrieveOrBuildStructEntry(s interface{}) (*structEntry, error) {
 	if reflectutil.IsNil(s) {
@@ -182,7 +192,6 @@ func (v *Validator) retrieveOrBuildStructEntry(s interface{}) (*structEntry, err
 		st = st.Elem()
 	}
 
-	// nolint:godox
 	// TODO: handle substructures
 	fieldEntries := make([]fieldEntry, 0, st.NumField())
 	for i := 0; i < st.NumField(); i++ {

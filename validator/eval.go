@@ -52,7 +52,9 @@ func newEvalVisitor(ctx context.Context, v *Validator, t Target) *evalVisitor {
 }
 
 func (ev *evalVisitor) Err() error {
-	// FIXME: add a generic error wrapper to contain all the evaluation errors
+	if len(ev.errs) > 0 {
+		return &Error{FieldErrs: ev.errs}
+	}
 	return nil
 }
 
@@ -71,7 +73,7 @@ func (ev *evalVisitor) VisitFunction(fn *ast.Function) error {
 		return fmt.Errorf("eval context %q: %w", fn.Name, err)
 	}
 
-	res, err := f(ev.ctx, ec, ev.t)
+	res, err := f.Evaluate(ev.ctx, ec, ev.t)
 	if err != nil {
 		fe, ok := err.(*FieldError)
 		if !ok {
