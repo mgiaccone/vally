@@ -8,6 +8,15 @@ var (
 	_ Node = (*LogicOr)(nil)
 )
 
+type ArgType int
+
+const (
+	FieldRef ArgType = iota + 1
+	FloatValue
+	IntValue
+	StringValue
+)
+
 // Visitor represents the AST tree traversal visitor.
 type Visitor interface {
 	VisitFunction(*Function) error
@@ -24,6 +33,7 @@ type Node interface {
 
 // FunctionArg represents an argument to a function.
 type FunctionArg struct {
+	Type        ArgType `json:"type"`
 	FieldRef    string  `json:"fieldRef,omitempty"`
 	FloatValue  float64 `json:"floatValue,omitempty"`
 	IntValue    int64   `json:"intValue,omitempty"`

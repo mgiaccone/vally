@@ -149,12 +149,14 @@ func parseFunctionArgs(s Scanner) ([]ast.FunctionArg, error) {
 			requireArg = true
 		case scanner.FIELDREF:
 			args = append(args, ast.FunctionArg{
+				Type:     ast.FieldRef,
 				FieldRef: tok.Literal,
 			})
 			argCount++
 			requireArg = false
 		case scanner.STRING:
 			args = append(args, ast.FunctionArg{
+				Type:        ast.StringValue,
 				StringValue: tok.Literal[1 : len(tok.Literal)-1],
 			})
 			argCount++
@@ -165,6 +167,7 @@ func parseFunctionArgs(s Scanner) ([]ast.FunctionArg, error) {
 				return nil, fmt.Errorf("argument #%d: %w", argCount, err)
 			}
 			args = append(args, ast.FunctionArg{
+				Type:     ast.IntValue,
 				IntValue: v,
 			})
 			argCount++
@@ -175,6 +178,7 @@ func parseFunctionArgs(s Scanner) ([]ast.FunctionArg, error) {
 				return nil, fmt.Errorf("argument #%d: %w", argCount, err)
 			}
 			args = append(args, ast.FunctionArg{
+				Type:       ast.FloatValue,
 				FloatValue: v,
 			})
 			argCount++

@@ -47,7 +47,31 @@ func TestValidator_ValidateValue(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "",
+			name:    "empty expression",
+			expr:    "",
+			wantErr: true,
+		},
+		{
+			name:    "parse error",
+			expr:    "bad_expression",
+			wantErr: true,
+		},
+		{
+			name:    "simple expression evaluation",
+			expr:    "true()",
+			wantErr: false,
+		},
+		{
+			name:    "value evaluation (fail)",
+			expr:    "required()",
+			value:   "",
+			wantErr: true,
+		},
+		{
+			name:    "value evaluation (success)",
+			expr:    "required()",
+			value:   "aaa",
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {

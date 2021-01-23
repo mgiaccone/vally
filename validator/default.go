@@ -11,5 +11,8 @@ func defaultFunctions() map[string]sdk.Function {
 		"true":     builtin.True,
 		"required": builtin.Required,
 		"email":    builtin.Email,
+		"isbn":     builtin.ISBN,
+		"isbn10":   builtin.ISBN10,
+		"isbn13":   builtin.ISBN13,
 	}
 }

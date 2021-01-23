@@ -17,16 +17,12 @@ var (
 // falseFunc validator
 type falseFunc struct{}
 
-func (f *falseFunc) ArgTypes() []sdk.ArgType { return nil }
-
 func (f *falseFunc) Evaluate(_ context.Context, _ sdk.EvalContext, _ sdk.Target) (bool, error) {
 	return false, nil
 }
 
 // trueFunc validator
 type trueFunc struct{}
-
-func (f *trueFunc) ArgTypes() []sdk.ArgType { return nil }
 
 func (f *trueFunc) Evaluate(_ context.Context, _ sdk.EvalContext, _ sdk.Target) (bool, error) {
 	return true, nil

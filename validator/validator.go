@@ -91,19 +91,24 @@ func (v *Validator) RegisterStruct(s interface{}) error {
 
 // ValidateStruct processes a struct value and applies the validation
 // expressions as given in each property tag.
-func (v *Validator) ValidateStruct(ctx context.Context, val interface{}) error {
-	if reflectutil.IsNil(val) {
-		return fmt.Errorf("value must not be nil")
+func (v *Validator) ValidateStruct(ctx context.Context, target interface{}) error {
+	if reflectutil.IsNil(target) {
+		return fmt.Errorf("target must not be nil")
 	}
 
-	entry, err := v.retrieveOrBuildStructEntry(val)
+	entry, err := v.retrieveOrBuildStructEntry(target)
 	if err != nil {
-		return fmt.Errorf("struct: %w", err)
+		return err
 	}
 
-	ev := newEvalVisitor(ctx, v, newStructTarget(val))
+	t, err := newStructTarget(target)
+	if err != nil {
+		return err
+	}
+
+	ev := newEvalVisitor(ctx, v, t)
 	if err = entry.validExpr.Visit(ev); err != nil {
-		return fmt.Errorf("evaluate expression: %w", err)
+		return err
 	}
 
 	return ev.Err()
@@ -114,12 +119,23 @@ func (v *Validator) ValidateStruct(ctx context.Context, val interface{}) error {
 // It returns an error of type validator.Error validation fails or a generic error
 // if other issues are detected.
 func (v *Validator) ValidateValue(ctx context.Context, expr string, value interface{}) error {
+	expr, err := patchExprScanner(expr, ".Value")
+	if err != nil {
+		return err
+	}
 	r := strings.NewReader(expr)
+
 	parsedExpr, err := parser.Parse(scanner.New(r))
 	if err != nil {
 		return err
 	}
-	ev := newEvalVisitor(ctx, v, newValueTarget(value))
+
+	t, err := newValueTarget(value)
+	if err != nil {
+		return fmt.Errorf("target: %w", err)
+	}
+
+	ev := newEvalVisitor(ctx, v, t)
 	if err := parsedExpr.Visit(ev); err != nil {
 		return err
 	}

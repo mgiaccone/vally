@@ -2,9 +2,9 @@
 
 ## Arguments
 
-TODO: describe argument types and default target behaviour
+TODO: describe argument types and default fieldref behaviour
 
-## Default functions
+## Built-in functions
 
 | Name | Description | Default target | Arguments |
 | --- | --- | --- | --- |

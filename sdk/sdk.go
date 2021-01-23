@@ -14,30 +14,40 @@ const (
 	String
 	Int
 	Float
-	StringArray
-	IntArray
-	FloatArray
 	Any
 )
 
-// Function represents the minimal methods a validation function must implement.
-type Function interface {
+// ArgTyper
+type ArgTyper interface {
 	ArgTypes() []ArgType
-	Evaluate(ctx context.Context, ec EvalContext, t Target) (bool, error)
 }
 
-// FunctionMeta
-type FunctionMeta interface {
-	ErrCodes() []string
+// ErrCode
+type ErrCode string
+
+// ErrCoder
+type ErrCoder interface {
+	ErrCodes() []ErrCode
+}
+
+// Function represents the minimal methods a validation function must implement.
+type Function interface {
+	Evaluate(ctx context.Context, ec EvalContext, t Target) (bool, error)
 }
 
 // EvalContext represents the evaluation context of the function being processed.
 type EvalContext interface {
 	FieldRef() string
 	FunctionName() string
+	FunctionArgs() []ArgValue
 }
 
 // Target wraps the targer being validated
 type Target interface {
-	ValueOf(fieldRef string) (interface{}, error)
+	FieldRefValue(fieldRef string) (interface{}, error)
 }
+
+// TODO: This might need to be revisited, it probably needs more than
+//  just the value or it has to be linked to the ArgType for checks?
+// ArgValue represents the actual value of a function argument
+type ArgValue interface{}
