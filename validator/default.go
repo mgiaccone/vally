@@ -9,9 +9,9 @@ func defaultFunctions() map[string]sdk.Function {
 	return map[string]sdk.Function{
 		"false":    builtin.False,
 		"true":     builtin.True,
+		"eq":       builtin.Equal,
 		"required": builtin.Required,
 		"email":    builtin.Email,
-		"isbn":     builtin.ISBN,
 		"isbn10":   builtin.ISBN10,
 		"isbn13":   builtin.ISBN13,
 	}

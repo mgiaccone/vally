@@ -14,7 +14,8 @@ const (
 	String
 	Int
 	Float
-	Any
+
+	Any = FieldRef | String | Int | Float
 )
 
 // ArgTyper
@@ -38,8 +39,9 @@ type Function interface {
 // EvalContext represents the evaluation context of the function being processed.
 type EvalContext interface {
 	FieldRef() string
-	FunctionName() string
 	FunctionArgs() []ArgValue
+	FunctionName() string
+	TargetRef() string
 }
 
 // Target wraps the targer being validated
@@ -49,5 +51,8 @@ type Target interface {
 
 // TODO: This might need to be revisited, it probably needs more than
 //  just the value or it has to be linked to the ArgType for checks?
+//  Also it could be useful for returning the field error with names
+//  for the argument values
+//
 // ArgValue represents the actual value of a function argument
 type ArgValue interface{}

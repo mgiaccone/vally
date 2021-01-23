@@ -62,17 +62,29 @@ func TestValidator_ValidateValue(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "value evaluation (fail)",
+			name:    "value required (fail)",
 			expr:    "required()",
 			value:   "",
 			wantErr: true,
 		},
 		{
-			name:    "value evaluation (success)",
+			name:    "value required (success)",
 			expr:    "required()",
 			value:   "aaa",
 			wantErr: false,
 		},
+		// {
+		// 	name:    "value equal (success)",
+		// 	expr:    "eq('fail')",
+		// 	value:   "do_fail",
+		// 	wantErr: true,
+		// },
+		// {
+		// 	name:    "value equal (success)",
+		// 	expr:    "eq('success')",
+		// 	value:   "success",
+		// 	wantErr: false,
+		// },
 	}
 	for _, tt := range tests {
 		tt := tt
@@ -82,4 +94,13 @@ func TestValidator_ValidateValue(t *testing.T) {
 			}
 		})
 	}
+}
+
+func Test_patchExprScanner(t *testing.T) {
+	testExpr := "(eq(.OtherField, 'GB') && required(    )) || true(    ) || eq('GB') && eq(1234) && eq(.OtherField,1234)"
+	testFieldRef := ".TestFieldRef"
+	expectedExpr := "(eq(.TestFieldRef,.OtherField, 'GB') && required(.TestFieldRef,.TestFieldRef)) || true(.TestFieldRef,.TestFieldRef) || eq(.TestFieldRef,.TestFieldRef,'GB') && eq(.TestFieldRef,.TestFieldRef,1234) && eq(.TestFieldRef,.OtherField,1234)"
+	got, err := patchExprScanner(testExpr, testFieldRef)
+	require.NoError(t, err)
+	require.Equal(t, expectedExpr, got)
 }

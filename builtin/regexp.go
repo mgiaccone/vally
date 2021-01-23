@@ -18,8 +18,6 @@ func (f *regexpMatch) ErrCodes() []sdk.ErrCode {
 	return []sdk.ErrCode{f.errCode}
 }
 
-func (f *regexpMatch) ArgTypes() []sdk.ArgType { return nil }
-
 func (f *regexpMatch) Evaluate(_ context.Context, ec sdk.EvalContext, t sdk.Target) (bool, error) {
 	fmt.Println("FN: ", ec.FunctionName(), " | FIELD: ", ec.FieldRef())
 

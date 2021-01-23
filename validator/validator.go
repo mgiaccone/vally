@@ -1,11 +1,15 @@
 package validator
 
 import (
+	"bufio"
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"reflect"
 	"strings"
 	"sync"
+	"unicode"
 
 	"github.com/osl4b/vally/internal/ast"
 	"github.com/osl4b/vally/internal/errutil"
@@ -18,6 +22,10 @@ import (
 
 const (
 	_defaultStructTag = "vally"
+)
+
+var (
+	ErrNotFound = errors.New("not found")
 )
 
 type structEntry struct {
@@ -116,7 +124,7 @@ func (v *Validator) ValidateStruct(ctx context.Context, target interface{}) erro
 
 // ValidateValue applies the validation expression to the given value.
 //
-// It returns an error of type validator.Error validation fails or a generic error
+// It returns an error of type validator.ValidationError validation fails or a generic error
 // if other issues are detected.
 func (v *Validator) ValidateValue(ctx context.Context, expr string, value interface{}) error {
 	expr, err := patchExprScanner(expr, ".Value")
@@ -224,7 +232,7 @@ func (v *Validator) retrieveOrBuildStructEntry(s interface{}) (*structEntry, err
 		if buf.Len() != 0 {
 			buf.WriteString("&&")
 		}
-		// fp.Expr = patchExprRegex(fp.Expr, fp.FieldRef)
+
 		fp.Expr, err = patchExprScanner(fp.Expr, fp.FieldRef)
 		if err != nil {
 			return nil, fmt.Errorf("field %q: %w", fp.Name, err)
@@ -256,4 +264,116 @@ func (v *Validator) lookupFunction(id string) (sdk.Function, error) {
 		return fn, nil
 	}
 	return nil, ErrNotFound
+}
+
+// TODO: review docs
+// patchExprScanner rewrites the expression adding the given fieldRef and targetRef to any function
+// that doesn't explicitly declare a targetRef. For instance the given the fieldRef ".SomeField"
+// and the expression "require()", the output expression will become "require(.SomeField,.SomeField)".
+//
+// It uses a scanner to perform the job, this implementation is about 5x faster
+// than the same function implemented with regular expressions.
+//
+func patchExprScanner(expr, fieldRef string) (string, error) {
+	var (
+		buf strings.Builder
+		ch  rune
+		err error
+	)
+	br := bufio.NewReaderSize(strings.NewReader(expr), 256)
+	for {
+		ch, _, err = br.ReadRune()
+		if errors.Is(err, io.EOF) {
+			break
+		}
+
+		// start ident
+		if unicode.IsLower(ch) {
+			buf.WriteRune(ch)
+
+			if err = consumeTo(br, &buf, '('); err == io.EOF {
+				return "", fmt.Errorf("consume ident: unexpected EOF")
+			}
+
+			// in argument list from here
+			ch, err = consumePrefixArg(br)
+			if err == io.EOF {
+				return "", fmt.Errorf("consume args: unexpected EOF")
+			}
+
+			// end of arg body
+			if ch == ')' {
+				buf.WriteString(fieldRef)
+				buf.WriteRune(',')
+				buf.WriteString(fieldRef)
+				buf.WriteRune(ch)
+				continue
+			}
+
+			// existing field ref, consume and move on
+			if ch == '.' {
+				buf.WriteString(fieldRef)
+				buf.WriteRune(',')
+				buf.WriteRune(ch)
+			}
+
+			// variable declaration
+			if ch == '\'' || unicode.IsDigit(ch) {
+				buf.WriteString(fieldRef)
+				buf.WriteRune(',')
+				buf.WriteString(fieldRef)
+				buf.WriteRune(',')
+				buf.WriteRune(ch)
+			}
+
+			if err = consumeTo(br, &buf, ')'); err == io.EOF {
+				return "", fmt.Errorf("consume ref args: unexpected EOF")
+			}
+		}
+
+		if ch == '(' || ch == ')' || ch == ' ' || ch == '\t' || ch == '&' || ch == '|' {
+			buf.WriteRune(ch)
+			continue
+		}
+	}
+
+	return buf.String(), nil
+}
+
+// consumeTo consumes the reader up to and including the first instance of the given stopCh rune is found.
+func consumeTo(in *bufio.Reader, out *strings.Builder, stopCh rune) error {
+	var (
+		ch  rune
+		err error
+	)
+	for {
+		// consume ident up to open left parenthesis
+		ch, _, err = in.ReadRune()
+		if err == io.EOF {
+			return err
+		}
+		out.WriteRune(ch)
+		if ch == stopCh {
+			break
+		}
+	}
+	return nil
+}
+
+// consumePrefixArg consumes the reader from the beginning of the argument body to either the end of the arg
+// body or to a valid argument. It is used when rewriting the expression to remove trailing whitespaces.
+func consumePrefixArg(in *bufio.Reader) (rune, error) {
+	var (
+		ch  rune
+		err error
+	)
+	for {
+		ch, _, err = in.ReadRune()
+		if err == io.EOF {
+			return 0, nil
+		}
+		if ch == ')' || ch == '.' || ch == ',' || ch == '\'' || unicode.IsDigit(ch) {
+			return ch, nil
+		}
+	}
 }

@@ -48,7 +48,7 @@ func (ec *evalContext) FunctionArgs() []sdk.ArgValue {
 	var args []sdk.ArgValue
 	for i, rawArg := range ec.rawFunc.Args {
 		// skip first fieldref
-		if i == 0 {
+		if i < 2 {
 			// FIXME: might need to skip to to account for fieldRef (the field the expression belongs to )
 			//  and funcTargetRef (the field the function needs to evaluate against)
 			continue
@@ -90,7 +90,7 @@ func newEvalVisitor(ctx context.Context, v *Validator, t sdk.Target) *evalVisito
 
 func (ev *evalVisitor) Err() error {
 	if len(ev.errs) > 0 {
-		return &Error{FieldErrs: ev.errs}
+		return &sdk.ValidationError{FieldErrs: ev.errs}
 	}
 	return nil
 }
@@ -122,7 +122,7 @@ func (ev *evalVisitor) VisitFunction(fn *ast.Function) error {
 		// FIXME: this is probably not correct, a way to fix the &&/|| issue might be to simply
 		//  return the error from here and check what to do with it in the VisitAnd/VisitOr? Maybe...
 		//  using a stack for errors the same way we pop results could work even better...
-		fe, ok := err.(*FieldError)
+		fe, ok := err.(*sdk.FieldError)
 		if !ok {
 			return fmt.Errorf("eval execute %q: %w", fn.Name, err)
 		}

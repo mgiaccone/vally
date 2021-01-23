@@ -1,24 +1,19 @@
-package validator
+package sdk
 
 import (
-	"errors"
 	"fmt"
 )
 
-var (
-	ErrNotFound = errors.New("not found")
-)
-
-type Error struct {
+type ValidationError struct {
 	FieldErrs []error
 }
 
-func (e *Error) Error() string {
+func (e *ValidationError) Error() string {
 	return fmt.Sprintf("validation failed with %d error(s)", len(e.FieldErrs))
 }
 
 type FieldError struct {
-	ErrCode       string
+	ErrCode       ErrCode
 	FieldFullPath string
 	FieldName     string
 	FieldPath     string

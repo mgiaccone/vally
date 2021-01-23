@@ -4,9 +4,7 @@ import (
 	"testing"
 )
 
-var (
-	_registerStructBenchErr error
-)
+var _registerStructBenchErr error
 
 func BenchmarkValidator_RegisterStruct(b *testing.B) {
 	b.ReportAllocs()
@@ -28,4 +26,19 @@ func BenchmarkValidator_RegisterStruct(b *testing.B) {
 		err = v.RegisterStruct(benchStruct{})
 	}
 	_registerStructBenchErr = err
+}
+
+var _patchExprBenchString string
+
+func Benchmark_patchExprScanner(b *testing.B) {
+	b.ReportAllocs()
+
+	testExpr := "(eq(.OtherField, 'GB') && required(    )) || true() || eq('GB') && eq(1234)"
+	testFieldRef := ".TestFieldRef"
+
+	var res string
+	for n := 0; n < b.N; n++ {
+		res, _ = patchExprScanner(testExpr, testFieldRef)
+	}
+	_patchExprBenchString = res
 }

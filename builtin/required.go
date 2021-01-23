@@ -2,7 +2,6 @@ package builtin
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/osl4b/vally/sdk"
 )
@@ -19,11 +18,17 @@ var (
 type requiredFunc struct{}
 
 func (f *requiredFunc) Evaluate(_ context.Context, eval sdk.EvalContext, target sdk.Target) (bool, error) {
-	fmt.Println("FIELD: ", eval.FieldRef(), " | FN: ", eval.FunctionName(), " | ARGS: ", eval.FunctionArgs())
+	v, err := target.FieldRefValue(eval.TargetRef())
+	if err != nil {
+		return false, err
+	}
 
-	v, _ := target.FieldRefValue(eval.FieldRef())
-	fmt.Println("VALUE: ", v)
-
-	// FIXME: missing implementation
+	isZero, err := sdk.IsZero(v)
+	if err != nil {
+		return false, err
+	}
+	if isZero {
+		return false, &sdk.FieldError{ErrCode: ErrCodeRequired}
+	}
 	return false, nil
 }
