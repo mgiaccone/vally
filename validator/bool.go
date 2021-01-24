@@ -1,9 +1,7 @@
-package builtin
+package validator
 
 import (
 	"context"
-
-	"github.com/osl4b/vally/sdk"
 )
 
 var (
@@ -17,13 +15,13 @@ var (
 // falseFunc validator
 type falseFunc struct{}
 
-func (f *falseFunc) Evaluate(_ context.Context, _ sdk.EvalContext, _ sdk.Target) (bool, error) {
+func (f *falseFunc) Evaluate(_ context.Context, _ EvalContext, _ Target) (bool, error) {
 	return false, nil
 }
 
 // trueFunc validator
 type trueFunc struct{}
 
-func (f *trueFunc) Evaluate(_ context.Context, _ sdk.EvalContext, _ sdk.Target) (bool, error) {
+func (f *trueFunc) Evaluate(_ context.Context, _ EvalContext, _ Target) (bool, error) {
 	return true, nil
 }

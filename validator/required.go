@@ -1,13 +1,11 @@
-package builtin
+package validator
 
 import (
 	"context"
-
-	"github.com/osl4b/vally/sdk"
 )
 
 const (
-	ErrCodeRequired = sdk.ErrCode("required")
+	ErrCodeRequired = ErrCode("required")
 )
 
 var (
@@ -17,18 +15,18 @@ var (
 
 type requiredFunc struct{}
 
-func (f *requiredFunc) Evaluate(_ context.Context, eval sdk.EvalContext, target sdk.Target) (bool, error) {
+func (f *requiredFunc) Evaluate(_ context.Context, eval EvalContext, target Target) (bool, error) {
 	v, err := target.FieldRefValue(eval.TargetRef())
 	if err != nil {
 		return false, err
 	}
 
-	isZero, err := sdk.IsZero(v)
+	isZero, err := IsZero(v)
 	if err != nil {
 		return false, err
 	}
 	if isZero {
-		return false, &sdk.FieldError{ErrCode: ErrCodeRequired}
+		return false, eval.NewFieldError(ErrCodeRequired)
 	}
 	return false, nil
 }

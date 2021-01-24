@@ -1,14 +1,12 @@
-package builtin
+package validator
 
 import (
 	"regexp"
-
-	"github.com/osl4b/vally/sdk"
 )
 
 const (
-	ErrCodeISBN10Invalid = sdk.ErrCode("isbn10/invalid")
-	ErrCodeISBN13Invalid = sdk.ErrCode("isbn13/invalid")
+	ErrCodeISBN10Invalid = ErrCode("isbn10/invalid")
+	ErrCodeISBN13Invalid = ErrCode("isbn13/invalid")
 )
 
 var (

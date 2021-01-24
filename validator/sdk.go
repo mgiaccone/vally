@@ -1,4 +1,4 @@
-package sdk
+package validator
 
 import (
 	"context"
@@ -39,9 +39,10 @@ type Function interface {
 // EvalContext represents the evaluation context of the function being processed.
 type EvalContext interface {
 	FieldRef() string
+	TargetRef() string
 	FunctionArgs() []ArgValue
 	FunctionName() string
-	TargetRef() string
+	NewFieldError(errCode ErrCode) *FieldError
 }
 
 // Target wraps the targer being validated

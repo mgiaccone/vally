@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/osl4b/vally/internal/ast"
-	"github.com/osl4b/vally/sdk"
 )
 
 // FIXME: How to implement && and || short-circuit evaluation?
@@ -17,8 +16,8 @@ import (
 //  plus cutting evaluation when possible will make it faster as well
 
 var (
-	_ ast.Visitor     = (*evalVisitor)(nil)
-	_ sdk.EvalContext = (*evalContext)(nil)
+	_ ast.Visitor = (*evalVisitor)(nil)
+	_ EvalContext = (*evalContext)(nil)
 )
 
 type evalContext struct {
@@ -29,6 +28,8 @@ func newEvalContext(fn *ast.Function) (*evalContext, error) {
 	ec := evalContext{
 		rawFunc: fn,
 	}
+
+	// FIXME: refactor this check to account for both fieldRef and targetRef
 	if len(fn.Args) == 0 || fn.Args[0].FieldRef == "" {
 		return nil, fmt.Errorf("eval context requires a .FieldRef")
 	}
@@ -44,8 +45,8 @@ func (ec *evalContext) TargetRef() string {
 	return ec.rawFunc.Args[1].FieldRef
 }
 
-func (ec *evalContext) FunctionArgs() []sdk.ArgValue {
-	var args []sdk.ArgValue
+func (ec *evalContext) FunctionArgs() []ArgValue {
+	var args []ArgValue
 	for i, rawArg := range ec.rawFunc.Args {
 		// skip first fieldref
 		if i < 2 {
@@ -72,15 +73,27 @@ func (ec *evalContext) FunctionName() string {
 	return ec.rawFunc.Name
 }
 
+func (ec *evalContext) NewFieldError(errCode ErrCode) *FieldError {
+	return &FieldError{
+		ErrCode:      errCode,
+		FieldName:    ec.FieldRef(),
+		FunctionName: ec.rawFunc.Name,
+		// FieldFullPath: "",
+		// FieldPath:     "",
+		// FieldValue:    nil,
+		// FunctionArgs:  nil,
+	}
+}
+
 type evalVisitor struct {
 	ctx  context.Context
-	t    sdk.Target
+	t    Target
 	v    *Validator
 	res  []bool
 	errs []error // FIXME: This might need to be treated as a stack as well
 }
 
-func newEvalVisitor(ctx context.Context, v *Validator, t sdk.Target) *evalVisitor {
+func newEvalVisitor(ctx context.Context, v *Validator, t Target) *evalVisitor {
 	return &evalVisitor{
 		ctx: ctx,
 		v:   v,
@@ -90,7 +103,7 @@ func newEvalVisitor(ctx context.Context, v *Validator, t sdk.Target) *evalVisito
 
 func (ev *evalVisitor) Err() error {
 	if len(ev.errs) > 0 {
-		return &sdk.ValidationError{FieldErrs: ev.errs}
+		return &ValidationError{FieldErrs: ev.errs}
 	}
 	return nil
 }
@@ -105,9 +118,9 @@ func (ev *evalVisitor) VisitFunction(fn *ast.Function) error {
 		return fmt.Errorf("eval lookup %q: %w", fn.Name, err)
 	}
 
-	// if the function implements sdk.ArgTyper we can check
+	// if the function implements ArgTyper we can check
 	// its argument types against the expected types
-	if ft, ok := f.(sdk.ArgTyper); ok {
+	if ft, ok := f.(ArgTyper); ok {
 		_ = ft
 		// TODO: check argument types against required types
 	}
@@ -122,7 +135,7 @@ func (ev *evalVisitor) VisitFunction(fn *ast.Function) error {
 		// FIXME: this is probably not correct, a way to fix the &&/|| issue might be to simply
 		//  return the error from here and check what to do with it in the VisitAnd/VisitOr? Maybe...
 		//  using a stack for errors the same way we pop results could work even better...
-		fe, ok := err.(*sdk.FieldError)
+		fe, ok := err.(*FieldError)
 		if !ok {
 			return fmt.Errorf("eval execute %q: %w", fn.Name, err)
 		}

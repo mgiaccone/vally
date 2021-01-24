@@ -1,14 +1,12 @@
-package builtin
+package validator
 
 import (
 	"regexp"
-
-	"github.com/osl4b/vally/sdk"
 )
 
 const (
-	//	ErrCodeEmailInvalidDomain = sdk.ErrCode("email/invalid_domain")
-	ErrCodeEmailInvalidFormat = sdk.ErrCode("email/invalid_format")
+	//	ErrCodeEmailInvalidDomain = ErrCode("email/invalid_domain")
+	ErrCodeEmailInvalidFormat = ErrCode("email/invalid_format")
 )
 
 var (

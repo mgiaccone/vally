@@ -17,7 +17,6 @@ import (
 	"github.com/osl4b/vally/internal/parser"
 	"github.com/osl4b/vally/internal/reflectutil"
 	"github.com/osl4b/vally/internal/scanner"
-	"github.com/osl4b/vally/sdk"
 )
 
 const (
@@ -42,7 +41,7 @@ type fieldEntry struct {
 
 // Validator contains the implementation of the validation logic.
 type Validator struct {
-	funcs           map[string]sdk.Function
+	funcs           map[string]Function
 	structCache     map[string]structEntry
 	structCacheLock sync.Mutex
 	structTag       string
@@ -58,20 +57,20 @@ func NewValidator(opts ...Option) *Validator {
 		apply(v)
 	}
 	if v.funcs == nil {
-		v.funcs = defaultFunctions()
+		v.funcs = builtInFunctions()
 	}
 	return v
 }
 
 // MustRegister adds a validator function with the given id.
 // It will panic if a function with the same id is already registered.
-func (v *Validator) MustRegister(id string, fn sdk.Function) {
+func (v *Validator) MustRegister(id string, fn Function) {
 	errutil.Must(v.Register(id, fn))
 }
 
 // Register adds a validator function with the given id.
 // It will return an error if a function with the same id is already registered, nil otherwise.
-func (v *Validator) Register(id string, fn sdk.Function) error {
+func (v *Validator) Register(id string, fn Function) error {
 	if _, exists := v.funcs[id]; exists {
 		return fmt.Errorf("function %q is already registered", id)
 	}
@@ -80,7 +79,7 @@ func (v *Validator) Register(id string, fn sdk.Function) error {
 }
 
 // Replace adds or replace the validator function with the given id.
-func (v *Validator) Replace(id string, fn sdk.Function) {
+func (v *Validator) Replace(id string, fn Function) {
 	v.funcs[id] = fn
 }
 
@@ -259,7 +258,7 @@ func (v *Validator) retrieveOrBuildStructEntry(s interface{}) (*structEntry, err
 }
 
 // lookupFunction returns the validator function with the given id or an error if the function is not registered.
-func (v *Validator) lookupFunction(id string) (sdk.Function, error) {
+func (v *Validator) lookupFunction(id string) (Function, error) {
 	if fn, exists := v.funcs[id]; exists {
 		return fn, nil
 	}

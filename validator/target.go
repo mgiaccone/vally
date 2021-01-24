@@ -2,13 +2,11 @@ package validator
 
 import (
 	"fmt"
-
-	"github.com/osl4b/vally/sdk"
 )
 
 var (
-	_ sdk.Target = (*structTarget)(nil)
-	_ sdk.Target = (*valueTarget)(nil)
+	_ Target = (*structTarget)(nil)
+	_ Target = (*valueTarget)(nil)
 )
 
 type structTarget struct {

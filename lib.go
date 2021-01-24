@@ -3,7 +3,6 @@ package vally
 import (
 	"context"
 
-	"github.com/osl4b/vally/sdk"
 	"github.com/osl4b/vally/validator"
 )
 
@@ -12,11 +11,11 @@ var (
 )
 
 // MustRegister
-func MustRegister(name string, fn sdk.Function) {
+func MustRegister(name string, fn validator.Function) {
 	_defaultValidator.MustRegister(name, fn)
 }
 
-func Register(name string, fn sdk.Function) error {
+func Register(name string, fn validator.Function) error {
 	return _defaultValidator.Register(name, fn)
 }
 
