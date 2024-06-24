@@ -1,0 +1,59 @@
+# https://golangci-lint.run/usage/configuration/
+run:
+  issues-exit-code: 1
+  tests: true
+  timeout: 1m
+  skip-dirs:
+    - .github
+    - .githook
+  skip-dirs-use-default: true
+
+output:
+  format: colored-line-number
+
+linters-settings:
+  gocognit:
+    min-complexity: 15
+  gocyclo:
+    min-complexity: 15
+  gofmt:
+    simplify: true
+  maligned:
+    suggest-new: true
+  misspell:
+    locale: US
+  whitespace:
+    multi-if: false
+    multi-func: false
+
+linters:
+  disable-all: true
+  enable:
+    - asciicheck
+    - deadcode
+    - dogsled
+    - errcheck
+    - gocognit
+    - goconst
+    - gocritic
+    - gocyclo
+#    - godox
+    - gofmt
+    - golint
+    - gosec
+    - gosimple
+    - govet
+    - ineffassign
+    - maligned
+    - megacheck
+    - misspell
+    - nestif
+    - rowserrcheck
+    - structcheck
+    - staticcheck
+    - typecheck
+    - varcheck
+    - unconvert
+    - unparam
+    - unused
+    - whitespace
